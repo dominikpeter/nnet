@@ -17,8 +17,8 @@ setnames(test, 1, "number")
 mod <- nnet(number ~ train_pca, data = train, size = 3)
 
 hidden_layer <- matrix(c(.9, .2, .1,
-              .3, .8, .5,
-              .4, .2, .6), nrow = 3)
+                         .3, .8, .5,
+                         .4, .2, .6), nrow = 3)
 
 input <- c(.9, .1, .8)
 
