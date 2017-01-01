@@ -5,7 +5,7 @@ query <- function(model, ...) UseMethod("query")
 nnet <- function(inputnodes,
                       hiddennodes,
                       outputnodes,
-                      activation_function = c("sigmoid", "tahn")
+                      activation_function = c("sigmoid", "tanh")
                       ) {
   inodes = inputnodes
   hnodes = hiddennodes
