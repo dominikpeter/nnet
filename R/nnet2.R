@@ -2,7 +2,6 @@
 train <- function(model, ...) UseMethod("train")
 query <- function(model, ...) UseMethod("query")
 
-
 nnet <- function(inputnodes,
                       hiddennodes,
                       outputnodes,
@@ -12,13 +11,17 @@ nnet <- function(inputnodes,
   hnodes = hiddennodes
   onodes = outputnodes
   
+  # init random weights
   wih <- array(rnorm(hnodes*inodes, sd = inodes^-.5), dim = c(hnodes, inodes))
   who <- array(rnorm(onodes*hnodes, sd = hnodes^-.5), dim = c(onodes, hnodes))
   
   activation_function = match.arg(activation_function)
   
-  structure(list(wih = wih,
-                 who =  who,
+  structure(list(layer = list(input = inodes,
+                              hidden = hnodes,
+                              output =  onodes),
+                 weights = list(wih = wih, 
+                                who =  who),
                  activation_function = activation_function),
             class = "nnet")
 }
@@ -27,13 +30,13 @@ nnet <- function(inputnodes,
 
 query.nnet <- function(model, inputs_list) {
   
-  inputs <- array(inputs_list)
+  inputs <- matrix(inputs_list, nrow = model$layer$input)
   
-  hidden_inputs <- model$wih %*% inputs
+  hidden_inputs <- model$weights$wih %*% inputs
   hidden_outputs <- do.call(model[["activation_function"]],
                             list(x = hidden_inputs))
   
-  final_inputs <- model$who %*% hidden_outputs
+  final_inputs <- model$weights$who %*% hidden_outputs
   final_outputs <- do.call(model[["activation_function"]],
                            list(x = final_inputs))
   
@@ -46,10 +49,10 @@ query.nnet <- function(model, inputs_list) {
 
 train.nnet <- function(model, inputs_list, target_list, learningrate) {
   qry_result <- query(model, inputs_list)
-  targets <- array(target_list, dim = c(length(target_list), 1))
+  targets <- matrix(target_list, nrow = model$layer$output)
   
-  who <- model$who
-  wih <- model$wih
+  who <- model$weights$who
+  wih <- model$weights$wih
   hidden_output <- qry_result$hidden_output
   final_output <- qry_result$final_output
   lr <- learningrate
@@ -57,10 +60,10 @@ train.nnet <- function(model, inputs_list, target_list, learningrate) {
   output_errors <- targets - final_output
   hidden_errors <- t(who) %*% output_errors
   
-  model$who <<- who + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
+  model$weights$who <<- who + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
                          t(hidden_output))
   
-  model$wih <<- wih + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
+  model$weights$wih <<- wih + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
                          t(hidden_output))
 
 }
@@ -72,6 +75,16 @@ predict.nnet <- function(model, newdata) {
 
 
 
-model <- nnet(6,6,6, "sigmoid")
-train(model, c(1,2,3,1,1,2), c(0,0,1,0,1,0), 0.1)
+model <- nnet(2,2,2, "sigmoid")
+model$weights
+
+model
+
+
+train(model, matrix(c(1,2,3,2), ncol = 2), matrix(c(0,0,1,0), ncol = 2), 0.1)
+
+
+
+
+
 
