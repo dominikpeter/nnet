@@ -40,7 +40,8 @@ query.nnet <- function(model, inputs_list) {
   final_outputs <- do.call(model$activation_function,
                            list(x = final_inputs))
   
-  list(hidden_inputs = hidden_inputs,
+  list(inputs = inputs,
+       hidden_inputs = hidden_inputs,
        hidden_outputs = hidden_outputs,
        final_inputs = final_inputs,
        final_outputs = final_outputs)
@@ -50,7 +51,7 @@ query.nnet <- function(model, inputs_list) {
 train.nnet <- function(model, inputs_list, target_list, learningrate) {
   qry_result <- query(model, inputs_list)
   
-  inputs <- qry_result$final_inputs
+  inputs <- qry_result$inputs
   targets <- matrix(target_list, nrow = model$layer$output)
   
   who <- model$weights$who
@@ -62,13 +63,17 @@ train.nnet <- function(model, inputs_list, target_list, learningrate) {
   output_errors <- targets - final_output
   hidden_errors <- t(who) %*% output_errors
   
-  model$weights$who <<- who + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
-                         t(hidden_output))
+  # list(output_errors = output_errors,
+  #      hidden_errors = hidden_errors,
+  #      hidden_output = hidden_output,
+  #      inputs = inputs,
+  #      who = model$weights$who,
+  #      wih = model$weights$wih)
   
-  model$weights$wih <<- wih + (lr * (hidden_errors * hidden_output * (1.0 - hidden_output)) %*%
-                         t(inputs))
-
+  model$weights$who <<- model$weights$who + (lr * (output_errors * final_output * (1.0 - final_output)) %*% t(hidden_output))
+  model$weights$wih <<- model$weights$wih + (lr * (hidden_errors * hidden_output * (1.0 - hidden_output)) %*% t(inputs))
 }
+
 
 
 predict.nnet <- function(model, newdata) {
@@ -81,22 +86,66 @@ predict.nnet <- function(model, newdata) {
 # --------------------------------------------------------------------------------------------------
 
 
-model <- nnet(4,3,4, "sigmoid")
+model <- nnet(4,3,2, "sigmoid")
 model$weights
 
-model
 
 query(model, c(1,2,3,4))
 
-t(x$final_inputs)
-
-model$weights$who
-model$weights$wih
 
 
+train(model, 1:4, 1:2, 0.1)
+model$weights
 
-train(model, matrix(c(1,2,3,2,1,2,3,2), ncol = 2), matrix(c(0,0,1,0,0,0,1,0), ncol = 1), 0.1)
+# Test Model
+# --------------------------------------------------------------------------------------------------
+
+library(magrittr)
+library(scales)
+
+input <- mtcars[, 1:7] %>% t %>% unname
+output <- mtcars[, "am"]
+output <- rbind(t(output), -1 %*% output + 1)
+
+# number of input variables
+niv <- nrow(input)
+
+# number of output variables
+nov <- nrow(output)
+
+# rescale input 
+input <- rescale(input)
+
+# init nnet
+model <- nnet(7, 3, 2, "sigmoid")
 
 model
+
+
+model$weights
+
+output
+input
+model
+
+train(model, input, output, learningrate = 0.1)
+
+
+
+train(model, c(1:6), c(1:2), 0.1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
