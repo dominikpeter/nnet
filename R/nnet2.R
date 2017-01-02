@@ -33,11 +33,11 @@ query.nnet <- function(model, inputs_list) {
   inputs <- matrix(inputs_list, nrow = model$layer$input)
   
   hidden_inputs <- model$weights$wih %*% inputs
-  hidden_outputs <- do.call(model[["activation_function"]],
+  hidden_outputs <- do.call(model$activation_function,
                             list(x = hidden_inputs))
   
   final_inputs <- model$weights$who %*% hidden_outputs
-  final_outputs <- do.call(model[["activation_function"]],
+  final_outputs <- do.call(model$activation_function,
                            list(x = final_inputs))
   
   list(hidden_inputs = hidden_inputs,
@@ -49,6 +49,8 @@ query.nnet <- function(model, inputs_list) {
 
 train.nnet <- function(model, inputs_list, target_list, learningrate) {
   qry_result <- query(model, inputs_list)
+  
+  inputs <- qry_result$final_inputs
   targets <- matrix(target_list, nrow = model$layer$output)
   
   who <- model$weights$who
@@ -63,8 +65,8 @@ train.nnet <- function(model, inputs_list, target_list, learningrate) {
   model$weights$who <<- who + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
                          t(hidden_output))
   
-  model$weights$wih <<- wih + (lr * (output_errors * final_output * (1.0 - final_output)) %*%
-                         t(hidden_output))
+  model$weights$wih <<- wih + (lr * (hidden_errors * hidden_output * (1.0 - hidden_output)) %*%
+                         t(inputs))
 
 }
 
@@ -75,16 +77,26 @@ predict.nnet <- function(model, newdata) {
 
 
 
-model <- nnet(2,2,2, "sigmoid")
+# Testing
+# --------------------------------------------------------------------------------------------------
+
+
+model <- nnet(4,3,4, "sigmoid")
 model$weights
 
 model
 
+query(model, c(1,2,3,4))
 
-train(model, matrix(c(1,2,3,2), ncol = 2), matrix(c(0,0,1,0), ncol = 2), 0.1)
+t(x$final_inputs)
+
+model$weights$who
+model$weights$wih
 
 
 
+train(model, matrix(c(1,2,3,2,1,2,3,2), ncol = 2), matrix(c(0,0,1,0,0,0,1,0), ncol = 1), 0.1)
 
+model
 
 
