@@ -1,7 +1,4 @@
 
-set.seed(2323)
-
-
 train <- function(model, ...) UseMethod("train")
 query <- function(model, ...) UseMethod("query")
 
