@@ -101,7 +101,8 @@ library(ggplot2)
 
 data.frame(errors = errors, i = 1:length(errors)) %>% 
   ggplot(aes(x = i, y = errors)) +
-  geom_line()
+  geom_line() +
+  theme_bw()
 
 
 ## after ore than 500 iterations the erros start to wiggle
