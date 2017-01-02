@@ -72,6 +72,11 @@ train.nnet <- function(model, inputs_list, target_list, learningrate) {
   
   model$weights$who <<- model$weights$who + (lr * (output_errors * final_output * (1.0 - final_output)) %*% t(hidden_output))
   model$weights$wih <<- model$weights$wih + (lr * (hidden_errors * hidden_output * (1.0 - hidden_output)) %*% t(inputs))
+
+  final_error <- targets - query(model, inputs_list)$final_output
+    
+  sum(output_errors^2)
+
 }
 
 
@@ -103,9 +108,11 @@ model$weights
 library(magrittr)
 library(scales)
 
-input <- mtcars[, 1:7] %>% t %>% unname
+input <- mtcars[, 1:7] %>% t %>% unname %>% rescale
 output <- mtcars[, "am"]
 output <- rbind(t(output), -1 %*% output + 1)
+row.names(output) <- c(0,1)
+
 
 # number of input variables
 niv <- nrow(input)
@@ -113,32 +120,67 @@ niv <- nrow(input)
 # number of output variables
 nov <- nrow(output)
 
-# rescale input 
-input <- rescale(input)
-
 # init nnet
 model <- nnet(7, 3, 2, "sigmoid")
 
-model
-
-
 model$weights
 
-output
-input
-model
 
-train(model, input, output, learningrate = 0.1)
+# train the model
+
+it <- 10000L
+errors <- vector(mode = "numeric", it)
+i <- 1L
+
+while(i <= it) {
+  SSE <- train(model, input, output, learningrate = 0.5)
+  errors[i] <- SSE
+  i <- i + 1L
+}
+
+
+p <- predict(model, input)
+p <- apply(p,2, which.max)
+p <- ifelse(p == 2, 0, 1)
+
+mtcars$am
+p
+# perfect trained model / probably not good ;-)
 
 
 
-train(model, c(1:6), c(1:2), 0.1)
+# new model
+# ------------------
+
+library(dummies)
+
+input <- mtcars[, 1:7] %>% t %>% unname %>% rescale
+output <- dummy(mtcars$gear) %>% t
+
+unique(mtcars$gear)
+
+model <- nnet(7, 4, 3, "sigmoid")
+model$weights
+
+
+# train the model
+
+it <- 100000L
+errors <- vector(mode = "numeric", it)
+i <- 1L
+
+while(i <= it) {
+  SSE <- train(model, input, output, learningrate = 0.5)
+  errors[i] <- SSE
+  i <- i + 1L
+}
 
 
 
 
-
-
+# some errors
+compare <- rbind(apply(predict(model, input),2, which.max), 
+                 apply(dummy(mtcars$gear) %>% t, 2, which.max)) %>% t
 
 
 
