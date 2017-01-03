@@ -75,10 +75,9 @@ train.nnet <- function(model, inputs_list, target_list, learningrate) {
 
   final_error <- targets - query(model, inputs_list)$final_output
     
-  sum(output_errors^2)
+  sum(final_error^2)
 
 }
-
 
 
 predict.nnet <- function(model, newdata) {

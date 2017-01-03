@@ -5,15 +5,10 @@ set.seed(2323)
 
 # Testing
 # --------------------------------------------------------------------------------------------------
-
-
 model <- nnet(4,3,2, "sigmoid")
 model$weights
 
-
 query(model, c(1,2,3,4))
-
-
 
 train(model, 1:4, 1:2, 0.1)
 model$weights
@@ -81,7 +76,7 @@ model$weights
 
 # train the model
 
-it <- 1000L
+it <- 100000L
 errors <- vector(mode = "numeric", it)
 i <- 1L
 
@@ -96,16 +91,15 @@ while(i <= it) {
 compare <- rbind(apply(predict(model, input),2, which.max), 
                  apply(dummy(mtcars$gear) %>% t, 2, which.max)) %>% t
 
+compare
+
 
 library(ggplot2)
 
 data.frame(errors = errors, i = 1:length(errors)) %>% 
   ggplot(aes(x = i, y = errors)) +
-  geom_line() +
+  geom_smooth() +
   theme_bw()
-
-
-## after ore than 500 iterations the erros start to wiggle
 
 
 
