@@ -42,11 +42,8 @@ i <- 1L
 errors <- array(0, dim = c(20, 784))
 
 foreach(i = 1:784) %dopar% {
-  input <- training[i,-1] %>% as.matrix %>% t
-  input <- input / (255 * .99) + 0.01
-  output <- training[i, 1] %>% as.matrix %>% dummy %>% t %>% unname
-  output <- output + 0.01
-  output[output == 1.01] <- 0.99
+  input <- training[i,-1] %>% as.matrix %>% t %>% rescale(to = 0.01, 0.99)
+  output <- training[i, 1] %>% as.matrix %>% dummy %>% t %>% unname %>% rescale(0.01, 0.99)
   foreach(t = 1:20) %dopar% {
     SSE <- train(model, input, output, learningrate = 0.1)
     errors[t:i] <- SSE
