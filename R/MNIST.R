@@ -11,8 +11,10 @@ library(parallel)
 
 parallel::makeCluster(4)
 
-training <- fread("datasets/mnist_train.csv")
-testing <- fread("datasets/mnist_test.csv")
+
+training <- fread("http://pjreddie.com/media/files/mnist_train.csv")
+testing <- fread("http://pjreddie.com/media/files/mnist_test.csv")
+
 
 # training <- fread("datasets/mnist_train_100.csv")
 # testing <- fread("datasets/mnist_test_10.csv")  
